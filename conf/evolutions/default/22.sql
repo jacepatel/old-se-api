@@ -1,0 +1,8 @@
+-- CREATE TABLE plans (
+--     planid serial,
+--     braintreetoken character varying(255),
+--     addOnId character varying(255),
+--     isdeleted boolean,
+--     includedTabs integer
+-- );
+-- ALTER TABLE billingplans ADD COLUMN planid integer;

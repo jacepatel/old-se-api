@@ -1,0 +1,1206 @@
+-- # --- !Ups
+--
+-- SET statement_timeout = 0;
+-- SET lock_timeout = 0;
+-- SET client_encoding = 'UTF8';
+-- SET standard_conforming_strings = on;
+-- SET check_function_bodies = false;
+-- SET client_min_messages = warning;
+--
+-- --
+-- -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
+-- --
+--
+-- CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+--
+--
+-- --
+-- -- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
+-- --
+--
+-- COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+--
+--
+-- SET search_path = public, pg_catalog;
+--
+-- --
+-- -- Name: datediff(character varying, timestamp without time zone, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: -
+-- --
+--
+-- CREATE FUNCTION datediff(units character varying, start_t timestamp without time zone, end_t timestamp without time zone) RETURNS integer
+--     LANGUAGE plpgsql
+--     AS $$
+--    DECLARE
+--      diff_interval INTERVAL;
+--      diff INT = 0;
+--      years_diff INT = 0;
+--    BEGIN
+--      IF units IN ('yy', 'yyyy', 'year', 'mm', 'm', 'month') THEN
+--        years_diff = DATE_PART('year', end_t) - DATE_PART('year', start_t);
+--
+--        IF units IN ('yy', 'yyyy', 'year') THEN
+--          -- SQL Server does not count full years passed (only difference between year parts)
+--          RETURN years_diff;
+--        ELSE
+--          -- If end month is less than start month it will subtracted
+--          RETURN years_diff * 12 + (DATE_PART('month', end_t) - DATE_PART('month', start_t));
+--        END IF;
+--      END IF;
+--
+--      -- Minus operator returns interval 'DDD days HH:MI:SS'
+--      diff_interval = end_t - start_t;
+--
+--      diff = diff + DATE_PART('day', diff_interval);
+--
+--      IF units IN ('wk', 'ww', 'week') THEN
+--        diff = diff/7;
+--        RETURN diff;
+--      END IF;
+--
+--      IF units IN ('dd', 'd', 'day') THEN
+--        RETURN diff;
+--      END IF;
+--
+--      diff = diff * 24 + DATE_PART('hour', diff_interval);
+--
+--      IF units IN ('hh', 'hour') THEN
+--         RETURN diff;
+--      END IF;
+--
+--      diff = diff * 60 + DATE_PART('minute', diff_interval);
+--
+--      IF units IN ('mi', 'n', 'minute') THEN
+--         RETURN diff;
+--      END IF;
+--
+--      diff = diff * 60 + DATE_PART('second', diff_interval);
+--
+--      RETURN diff;
+--    END;
+--    $$;
+--
+--
+-- SET default_tablespace = '';
+--
+-- SET default_with_oids = false;
+--
+-- --
+-- -- Name: events; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE events (
+--     eventid integer NOT NULL,
+--     name character varying(50),
+--     markerurl character varying(100),
+--     lat double precision,
+--     lng double precision,
+--     endtime timestamp
+-- );
+--
+--
+-- --
+-- -- Name: events_eventid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE events_eventid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: events_eventid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE events_eventid_seq OWNED BY events.eventid;
+--
+--
+-- --
+-- -- Name: images; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE images (
+--     imageid integer NOT NULL,
+--     itemid integer NOT NULL,
+--     path character varying(255) DEFAULT NULL::character varying
+-- );
+--
+--
+-- --
+-- -- Name: images_imageid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE images_imageid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: images_imageid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE images_imageid_seq OWNED BY images.imageid;
+--
+--
+-- --
+-- -- Name: itemoptionmapping; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE itemoptionmapping (
+--     itemoptionid integer NOT NULL,
+--     itemid integer NOT NULL,
+--     itemoptionmappingid bigint NOT NULL
+-- );
+--
+--
+-- --
+-- -- Name: itemoptionmapping_itemoptionmappingid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE itemoptionmapping_itemoptionmappingid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: itemoptionmapping_itemoptionmappingid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE itemoptionmapping_itemoptionmappingid_seq OWNED BY itemoptionmapping.itemoptionmappingid;
+--
+--
+-- --
+-- -- Name: itemoptions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE itemoptions (
+--     itemoptionid integer NOT NULL,
+--     name character varying(100),
+--     shortname character varying(100),
+--     type character varying(200),
+--     cost money,
+--     isdeleted boolean,
+--     truckid integer
+-- );
+--
+--
+-- --
+-- -- Name: itemoptions_itemoptionid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE itemoptions_itemoptionid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: itemoptions_itemoptionid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE itemoptions_itemoptionid_seq OWNED BY itemoptions.itemoptionid;
+--
+--
+-- --
+-- -- Name: itemoptionselects; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE itemoptionselects (
+--     itemoptionselectid integer NOT NULL,
+--     itemoptionid integer,
+--     name character varying(100),
+--     shortname character varying(20),
+--     cost money,
+--     isdefault boolean,
+--     isdeleted boolean DEFAULT false
+-- );
+--
+--
+-- --
+-- -- Name: itemoptionselects_itemoptionselectid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE itemoptionselects_itemoptionselectid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: itemoptionselects_itemoptionselectid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE itemoptionselects_itemoptionselectid_seq OWNED BY itemoptionselects.itemoptionselectid;
+--
+--
+-- --
+-- -- Name: itemoptionsselects; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE itemoptionsselects (
+--     itemoptionselectid integer NOT NULL,
+--     itemoptionid integer,
+--     name character varying(100),
+--     shortname character varying(100),
+--     cost money
+-- );
+--
+--
+-- --
+-- -- Name: itemoptionsselects_itemoptionselectid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE itemoptionsselects_itemoptionselectid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: itemoptionsselects_itemoptionselectid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE itemoptionsselects_itemoptionselectid_seq OWNED BY itemoptionsselects.itemoptionselectid;
+--
+--
+-- --
+-- -- Name: items; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE items (
+--     itemid integer NOT NULL,
+--     name character varying(255),
+--     price double precision,
+--     truckid integer NOT NULL,
+--     description character varying(255),
+--     isactive boolean,
+--     maxquantity integer,
+--     createddate timestamp without time zone,
+--     shortdescription character varying(30),
+--     isdeleted boolean
+-- );
+--
+--
+-- --
+-- -- Name: items_itemid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE items_itemid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: items_itemid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE items_itemid_seq OWNED BY items.itemid;
+--
+--
+-- --
+-- -- Name: orderitemoptions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE orderitemoptions (
+--     orderitemoptionid integer NOT NULL,
+--     orderitemid integer,
+--     name character varying(255),
+--     shortname character varying(255),
+--     cost money,
+--     itemoptionselectid integer,
+--     type character varying(50)
+-- );
+--
+--
+-- --
+-- -- Name: orderitemoptions_orderitemoptionid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE orderitemoptions_orderitemoptionid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: orderitemoptions_orderitemoptionid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE orderitemoptions_orderitemoptionid_seq OWNED BY orderitemoptions.orderitemoptionid;
+--
+--
+-- --
+-- -- Name: orderitems; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE orderitems (
+--     orderitemid integer NOT NULL,
+--     orderid integer,
+--     itemid integer,
+--     quantity integer,
+--     itemprice numeric(15,2) DEFAULT NULL::numeric,
+--     discountamount numeric(15,2) DEFAULT NULL::numeric,
+--     totalpaid numeric(15,2) DEFAULT NULL::numeric
+-- );
+--
+--
+-- --
+-- -- Name: orderitems_orderitemid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE orderitems_orderitemid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: orderitems_orderitemid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE orderitems_orderitemid_seq OWNED BY orderitems.orderitemid;
+--
+--
+-- --
+-- -- Name: orders; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE orders (
+--     orderid integer NOT NULL,
+--     truckid integer NOT NULL,
+--     userid integer,
+--     trucksessionid integer NOT NULL,
+--     orderstatus integer DEFAULT 0,
+--     ordertime timestamp without time zone DEFAULT now() NOT NULL,
+--     readytime timestamp without time zone,
+--     collecttime timestamp without time zone,
+--     ordertotalpaid numeric(15,2),
+--     paymentmethodid integer NOT NULL,
+--     mobilenumber character varying(20),
+--     ordername character varying(40),
+--     ordertype integer NOT NULL,
+--     paymenttoken character varying(50),
+--     spreedlyorderid character varying(32),
+--     comments character varying(100)
+-- );
+--
+--
+-- --
+-- -- Name: orders_orderid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE orders_orderid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: orders_orderid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE orders_orderid_seq OWNED BY orders.orderid;
+--
+--
+-- --
+-- -- Name: passwordresets; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE passwordresets (
+--     resettoken character varying(32),
+--     userid integer,
+--     isused boolean DEFAULT false,
+--     passwordresetid integer NOT NULL
+-- );
+--
+--
+-- --
+-- -- Name: passwordresets_passwordresetid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE passwordresets_passwordresetid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: passwordresets_passwordresetid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE passwordresets_passwordresetid_seq OWNED BY passwordresets.passwordresetid;
+--
+--
+-- --
+-- -- Name: paymentmethods; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE paymentmethods (
+--     paymentmethodid integer NOT NULL,
+--     userid integer,
+--     braintreetoken character varying(255),
+--     identifier character varying(255),
+--     cardtype character varying(50) NOT NULL,
+--     defaultmethod boolean DEFAULT false,
+--     isdeleted boolean DEFAULT false,
+--     paymentmethodtoken character varying(255)
+-- );
+--
+--
+-- --
+-- -- Name: paymentmethods_paymentmethodid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE paymentmethods_paymentmethodid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: paymentmethods_paymentmethodid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE paymentmethods_paymentmethodid_seq OWNED BY paymentmethods.paymentmethodid;
+--
+--
+-- --
+-- -- Name: reviewquestions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE reviewquestions (
+--     reviewquestionid integer NOT NULL,
+--     question character varying(400) NOT NULL,
+--     possiblestars integer NOT NULL,
+--     selectedimagepath character varying(2000),
+--     unselectedimagepath character varying(2000)
+-- );
+--
+--
+-- --
+-- -- Name: reviewquestions_reviewquestionid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE reviewquestions_reviewquestionid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: reviewquestions_reviewquestionid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE reviewquestions_reviewquestionid_seq OWNED BY reviewquestions.reviewquestionid;
+--
+--
+-- --
+-- -- Name: subscriptions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE subscriptions (
+--     email character varying(300) NOT NULL,
+--     isactive boolean,
+--     joineddate timestamp without time zone,
+--     isvendor boolean,
+--     name character varying(300),
+--     mobilenumber character varying(300)
+-- );
+--
+--
+-- --
+-- -- Name: trucks; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE trucks (
+--     truckid integer NOT NULL,
+--     email character varying(255),
+--     password_hash character varying(255),
+--     registration character varying(255),
+--     firstname character varying(255),
+--     lastname character varying(255),
+--     lat double precision,
+--     lng double precision,
+--     name character varying(32) NOT NULL,
+--     createddate timestamp without time zone,
+--     description character varying(1000),
+--     isdeleted boolean,
+--     markerurl character varying(120)
+-- );
+--
+--
+-- --
+-- -- Name: trucks_truckid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE trucks_truckid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: trucks_truckid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE trucks_truckid_seq OWNED BY trucks.truckid;
+--
+--
+-- --
+-- -- Name: trucksessions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE trucksessions (
+--     trucksessionid integer NOT NULL,
+--     truckid integer NOT NULL,
+--     starttime timestamp without time zone NOT NULL,
+--     endtime timestamp without time zone NOT NULL,
+--     lat double precision NOT NULL,
+--     lng double precision NOT NULL,
+--     isactive boolean NOT NULL,
+--     locationdirections character varying(1000),
+--     isactivefororders boolean,
+--     eventid integer
+-- );
+--
+--
+-- --
+-- -- Name: trucksessions_trucksessionid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE trucksessions_trucksessionid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: trucksessions_trucksessionid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE trucksessions_trucksessionid_seq OWNED BY trucksessions.trucksessionid;
+--
+--
+-- --
+-- -- Name: userreviews; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE userreviews (
+--     userreviewid integer NOT NULL,
+--     userid integer NOT NULL,
+--     orderid integer NOT NULL,
+--     reviewcompletetime timestamp without time zone NOT NULL,
+--     reviewquestionid integer NOT NULL,
+--     starsgiven integer NOT NULL
+-- );
+--
+--
+-- --
+-- -- Name: userreviews_userreviewid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE userreviews_userreviewid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: userreviews_userreviewid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE userreviews_userreviewid_seq OWNED BY userreviews.userreviewid;
+--
+--
+-- --
+-- -- Name: users; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE users (
+--     userid integer NOT NULL,
+--     firstname character varying(255) NOT NULL,
+--     lastname character varying(255) NOT NULL,
+--     email character varying(255) NOT NULL,
+--     password_hash character varying(255),
+--     createddate timestamp without time zone,
+--     mobilenumber character varying(255)
+-- );
+--
+--
+-- --
+-- -- Name: users_userid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE users_userid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: users_userid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE users_userid_seq OWNED BY users.userid;
+--
+--
+-- --
+-- -- Name: usersessions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE usersessions (
+--     usersessionid bigint NOT NULL,
+--     userid integer,
+--     createdtime timestamp without time zone,
+--     isactive boolean,
+--     usersessiontoken character varying(40)
+-- );
+--
+--
+-- --
+-- -- Name: usersessions_usersessionid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE usersessions_usersessionid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: usersessions_usersessionid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE usersessions_usersessionid_seq OWNED BY usersessions.usersessionid;
+--
+--
+-- --
+-- -- Name: vendorsubscriptions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE vendorsubscriptions (
+--     email character varying(300) NOT NULL,
+--     mobilenumber character varying(20),
+--     name character varying(300)
+-- );
+--
+--
+-- --
+-- -- Name: versions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- CREATE TABLE versions (
+--     versionid integer NOT NULL,
+--     code character varying(10),
+--     iscritical boolean
+-- );
+--
+--
+-- --
+-- -- Name: versions_versionid_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- --
+--
+-- CREATE SEQUENCE versions_versionid_seq
+--     START WITH 1
+--     INCREMENT BY 1
+--     NO MINVALUE
+--     NO MAXVALUE
+--     CACHE 1;
+--
+--
+-- --
+-- -- Name: versions_versionid_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- --
+--
+-- ALTER SEQUENCE versions_versionid_seq OWNED BY versions.versionid;
+--
+--
+-- --
+-- -- Name: eventid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY events ALTER COLUMN eventid SET DEFAULT nextval('events_eventid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: imageid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY images ALTER COLUMN imageid SET DEFAULT nextval('images_imageid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: itemoptionmappingid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptionmapping ALTER COLUMN itemoptionmappingid SET DEFAULT nextval('itemoptionmapping_itemoptionmappingid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: itemoptionid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptions ALTER COLUMN itemoptionid SET DEFAULT nextval('itemoptions_itemoptionid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: itemoptionselectid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptionselects ALTER COLUMN itemoptionselectid SET DEFAULT nextval('itemoptionselects_itemoptionselectid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: itemoptionselectid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptionsselects ALTER COLUMN itemoptionselectid SET DEFAULT nextval('itemoptionsselects_itemoptionselectid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: itemid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY items ALTER COLUMN itemid SET DEFAULT nextval('items_itemid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: orderitemoptionid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orderitemoptions ALTER COLUMN orderitemoptionid SET DEFAULT nextval('orderitemoptions_orderitemoptionid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: orderitemid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orderitems ALTER COLUMN orderitemid SET DEFAULT nextval('orderitems_orderitemid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: orderid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orders ALTER COLUMN orderid SET DEFAULT nextval('orders_orderid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: passwordresetid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY passwordresets ALTER COLUMN passwordresetid SET DEFAULT nextval('passwordresets_passwordresetid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: paymentmethodid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY paymentmethods ALTER COLUMN paymentmethodid SET DEFAULT nextval('paymentmethods_paymentmethodid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: reviewquestionid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY reviewquestions ALTER COLUMN reviewquestionid SET DEFAULT nextval('reviewquestions_reviewquestionid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: truckid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY trucks ALTER COLUMN truckid SET DEFAULT nextval('trucks_truckid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: trucksessionid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY trucksessions ALTER COLUMN trucksessionid SET DEFAULT nextval('trucksessions_trucksessionid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: userreviewid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY userreviews ALTER COLUMN userreviewid SET DEFAULT nextval('userreviews_userreviewid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: userid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY users ALTER COLUMN userid SET DEFAULT nextval('users_userid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: usersessionid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY usersessions ALTER COLUMN usersessionid SET DEFAULT nextval('usersessions_usersessionid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: versionid; Type: DEFAULT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY versions ALTER COLUMN versionid SET DEFAULT nextval('versions_versionid_seq'::regclass);
+--
+--
+-- --
+-- -- Name: images_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY images
+--     ADD CONSTRAINT images_pkey PRIMARY KEY (imageid);
+--
+--
+-- --
+-- -- Name: itemoptionmapping_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY itemoptionmapping
+--     ADD CONSTRAINT itemoptionmapping_pkey PRIMARY KEY (itemoptionid, itemid);
+--
+--
+-- --
+-- -- Name: itemoptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY itemoptions
+--     ADD CONSTRAINT itemoptions_pkey PRIMARY KEY (itemoptionid);
+--
+--
+-- --
+-- -- Name: itemoptionselects_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY itemoptionselects
+--     ADD CONSTRAINT itemoptionselects_pkey PRIMARY KEY (itemoptionselectid);
+--
+--
+-- --
+-- -- Name: itemoptionsselects_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY itemoptionsselects
+--     ADD CONSTRAINT itemoptionsselects_pkey PRIMARY KEY (itemoptionselectid);
+--
+--
+-- --
+-- -- Name: items_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY items
+--     ADD CONSTRAINT items_pkey PRIMARY KEY (itemid);
+--
+--
+-- --
+-- -- Name: orderitemoptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY orderitemoptions
+--     ADD CONSTRAINT orderitemoptions_pkey PRIMARY KEY (orderitemoptionid);
+--
+--
+-- --
+-- -- Name: orderitems_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY orderitems
+--     ADD CONSTRAINT orderitems_pkey PRIMARY KEY (orderitemid);
+--
+--
+-- --
+-- -- Name: orders_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY orders
+--     ADD CONSTRAINT orders_pkey PRIMARY KEY (orderid);
+--
+--
+-- --
+-- -- Name: passwordresets_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY passwordresets
+--     ADD CONSTRAINT passwordresets_pkey PRIMARY KEY (passwordresetid);
+--
+--
+-- --
+-- -- Name: paymentmethods_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY paymentmethods
+--     ADD CONSTRAINT paymentmethods_pkey PRIMARY KEY (paymentmethodid);
+--
+--
+-- --
+-- -- Name: reviewquestions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY reviewquestions
+--     ADD CONSTRAINT reviewquestions_pkey PRIMARY KEY (reviewquestionid);
+--
+--
+-- --
+-- -- Name: subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY subscriptions
+--     ADD CONSTRAINT subscriptions_pkey PRIMARY KEY (email);
+--
+--
+-- --
+-- -- Name: trucks_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY trucks
+--     ADD CONSTRAINT trucks_pkey PRIMARY KEY (truckid);
+--
+--
+-- --
+-- -- Name: trucksessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY trucksessions
+--     ADD CONSTRAINT trucksessions_pkey PRIMARY KEY (trucksessionid);
+--
+--
+-- --
+-- -- Name: unique_paymentmethodid; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY paymentmethods
+--     ADD CONSTRAINT unique_paymentmethodid UNIQUE (paymentmethodid);
+--
+--
+-- --
+-- -- Name: userorderreview; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY userreviews
+--     ADD CONSTRAINT userorderreview UNIQUE (userid, orderid, reviewquestionid);
+--
+--
+-- --
+-- -- Name: userreviews_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY userreviews
+--     ADD CONSTRAINT userreviews_pkey PRIMARY KEY (userreviewid);
+--
+--
+-- --
+-- -- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY users
+--     ADD CONSTRAINT users_pkey PRIMARY KEY (userid);
+--
+--
+-- --
+-- -- Name: usersessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY usersessions
+--     ADD CONSTRAINT usersessions_pkey PRIMARY KEY (usersessionid);
+--
+--
+-- --
+-- -- Name: vendorsubscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- --
+--
+-- ALTER TABLE ONLY vendorsubscriptions
+--     ADD CONSTRAINT vendorsubscriptions_pkey PRIMARY KEY (email);
+--
+--
+-- --
+-- -- Name: fk_images_itemid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY images
+--     ADD CONSTRAINT fk_images_itemid FOREIGN KEY (itemid) REFERENCES items(itemid);
+--
+--
+-- --
+-- -- Name: fk_items_truckid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY items
+--     ADD CONSTRAINT fk_items_truckid FOREIGN KEY (truckid) REFERENCES trucks(truckid);
+--
+--
+-- --
+-- -- Name: fk_orderitems_itemid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orderitems
+--     ADD CONSTRAINT fk_orderitems_itemid FOREIGN KEY (itemid) REFERENCES items(itemid);
+--
+--
+-- --
+-- -- Name: fk_orderitems_orderid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orderitems
+--     ADD CONSTRAINT fk_orderitems_orderid FOREIGN KEY (orderid) REFERENCES orders(orderid);
+--
+--
+-- --
+-- -- Name: fk_orders_paymentmethodid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orders
+--     ADD CONSTRAINT fk_orders_paymentmethodid FOREIGN KEY (paymentmethodid) REFERENCES paymentmethods(paymentmethodid) ON UPDATE CASCADE ON DELETE CASCADE;
+--
+--
+-- --
+-- -- Name: fk_orders_truckid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orders
+--     ADD CONSTRAINT fk_orders_truckid FOREIGN KEY (truckid) REFERENCES trucks(truckid);
+--
+--
+-- --
+-- -- Name: fk_orders_trucksessionid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orders
+--     ADD CONSTRAINT fk_orders_trucksessionid FOREIGN KEY (trucksessionid) REFERENCES trucksessions(trucksessionid);
+--
+--
+-- --
+-- -- Name: fk_orders_userid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orders
+--     ADD CONSTRAINT fk_orders_userid FOREIGN KEY (userid) REFERENCES users(userid);
+--
+--
+-- --
+-- -- Name: fk_trucksessions_truckid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY trucksessions
+--     ADD CONSTRAINT fk_trucksessions_truckid FOREIGN KEY (truckid) REFERENCES trucks(truckid);
+--
+--
+-- --
+-- -- Name: fk_userreviews_orderid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY userreviews
+--     ADD CONSTRAINT fk_userreviews_orderid FOREIGN KEY (orderid) REFERENCES orders(orderid);
+--
+--
+-- --
+-- -- Name: fk_userreviews_userid; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY userreviews
+--     ADD CONSTRAINT fk_userreviews_userid FOREIGN KEY (userid) REFERENCES users(userid);
+--
+--
+-- --
+-- -- Name: itemoptionmapping_itemid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptionmapping
+--     ADD CONSTRAINT itemoptionmapping_itemid_fkey FOREIGN KEY (itemid) REFERENCES items(itemid);
+--
+--
+-- --
+-- -- Name: itemoptionmapping_itemoptionid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptionmapping
+--     ADD CONSTRAINT itemoptionmapping_itemoptionid_fkey FOREIGN KEY (itemoptionid) REFERENCES itemoptions(itemoptionid);
+--
+--
+-- --
+-- -- Name: itemoptions_truckid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptions
+--     ADD CONSTRAINT itemoptions_truckid_fkey FOREIGN KEY (truckid) REFERENCES trucks(truckid);
+--
+--
+-- --
+-- -- Name: itemoptionselects_itemoptionid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptionselects
+--     ADD CONSTRAINT itemoptionselects_itemoptionid_fkey FOREIGN KEY (itemoptionid) REFERENCES itemoptions(itemoptionid);
+--
+--
+-- --
+-- -- Name: itemoptionsselects_itemoptionid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY itemoptionsselects
+--     ADD CONSTRAINT itemoptionsselects_itemoptionid_fkey FOREIGN KEY (itemoptionid) REFERENCES itemoptions(itemoptionid);
+--
+--
+-- --
+-- -- Name: orderitemoptions_orderitemid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY orderitemoptions
+--     ADD CONSTRAINT orderitemoptions_orderitemid_fkey FOREIGN KEY (orderitemid) REFERENCES orderitems(orderitemid);
+--
+--
+-- --
+-- -- Name: usersession_user_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- --
+--
+-- ALTER TABLE ONLY usersessions
+--     ADD CONSTRAINT usersession_user_fk FOREIGN KEY (userid) REFERENCES users(userid) ON DELETE CASCADE;
+--
+--
+-- --
+-- -- PostgreSQL database dump complete
+-- --
+--
+-- # --- !Downs

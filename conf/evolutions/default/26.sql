@@ -1,0 +1,1 @@
+-- alter table users add column locality character varying(255)

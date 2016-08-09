@@ -1,0 +1,6 @@
+-- #-- Example
+--
+-- # --- !Ups
+-- ALTER TABLE Events ADD COLUMN Address varchar(250) Default NULL;
+-- # --- !Downs
+-- ALTER TABLE Events DROP COLUMN address;

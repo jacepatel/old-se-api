@@ -1,0 +1,6 @@
+-- #-- Example
+--
+-- # --- !Ups
+-- ALTER TABLE Trucks ADD COLUMN contactEmail varchar(250) Default NULL;
+-- # --- !Downs
+-- ALTER TABLE Trucks DROP COLUMN contactEmail;

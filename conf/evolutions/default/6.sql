@@ -1,0 +1,7 @@
+-- #-- Example
+--
+-- # --- !Ups
+-- ALTER TABLE orders ADD COLUMN deviceid int;
+--
+-- # --- !Downs
+-- ALTER TABLE orders DROP COLUMN deviceid;

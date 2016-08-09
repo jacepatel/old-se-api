@@ -1,0 +1,5 @@
+-- # --- !Ups
+-- CREATE TABLE devices (deviceid serial, devicetype varchar(100) NOT NULL, devicetoken varchar(200) NOT NULL, userid integer NOT NULL, lastused timestamp, FOREIGN KEY (userid) REFERENCES users(userid))
+--
+-- # --- !Downs
+-- DROP TABLE devices;

@@ -1,0 +1,13 @@
+-- #-- Example
+-- # --- !Ups
+-- ALTER TABLE BillingPlans ADD COLUMN trial boolean Default false;
+-- # --- !Downs
+-- ALTER TABLE Trucks DROP COLUMN trial;
+--
+-- ALTER TABLE Trucks ADD COLUMN timezoneName VARCHAR(500) DEFAULT 'Australia/Brisbane';
+--
+-- ALTER TABLE Trucks ADD COLUMN currency VARCHAR(10) DEFAULT 'AUD'
+--
+-- ALTER TABLE Events ADD Column isDeleted boolean default false;
+--
+-- ALTER TABLE Events ADD COLUMN eventManagerId INT DEFAULT NULL REFERENCES EventManagers (eventManagerId);

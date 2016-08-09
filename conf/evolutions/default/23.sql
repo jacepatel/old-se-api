@@ -1,0 +1,11 @@
+-- CREATE TABLE bankaccounts (
+--     bankaccountid serial,
+--     bsb character varying(20),
+--     accountnumber character varying(255),
+--     isdeleted boolean,
+--     truckid integer,
+--     accountname character varying(255)
+-- );
+-- alter table plans add column price money;
+-- alter table billingplans add column standone character varying(20);
+-- alter table billingplans add column standtwo character varying(20);

@@ -1,0 +1,7 @@
+-- #-- Example
+--
+-- # --- !Ups
+-- ALTER TABLE ItemOptions ADD COLUMN IsUserVisible BOOLEAN;
+--
+-- # --- !Downs
+-- ALTER TABLE ItemOptions DROP COLUMN IsUserVisible;

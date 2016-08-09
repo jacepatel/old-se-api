@@ -1,0 +1,8 @@
+-- #-- Example
+-- # --- !Ups
+-- ALTER TABLE Items ADD Column IsActiveForUsers BOOLEAN Default TRUE;
+--ALTER TABLE Trucks ADD COLUMN contactNumber VARCHAR(12) DEFAULT NULL;
+--ALTER TABLE Items ADD Column Color VARCHAR(10) DEFAULT 'colorA';
+--ALTER TABLE ItemOptions ADD COLUMN Color VARCHAR(10) DEFAULT 'colorA';
+-- # --- !Downs
+--

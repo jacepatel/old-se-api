@@ -1,0 +1,15 @@
+-- #-- Example
+--
+-- # --- !Ups
+-- ALTER TABLE Orders ADD COLUMN capturetoken varchar(200) DEFAULT NULL;
+-- CREATE TABLE pushnotifications (
+--     pushnotificationid serial,
+--     orderid integer,
+--     messagetoken character varying(200),
+--     errormessage character varying(200) DEFAULT NULL,
+--     senttime timestamp
+-- );
+--
+-- # --- !Downs
+-- ALTER TABLE Orders DROP COLUMN capturetoken;
+-- DROP TABLE pushnotifications;

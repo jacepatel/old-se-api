@@ -1,0 +1,5 @@
+-- #-- Example
+-- # --- !Ups
+-- ALTER TABLE Trucks ADD COLUMN facebookPageId varchar(250) Default NULL;
+-- # --- !Downs
+-- ALTER TABLE Trucks DROP COLUMN facebookPageId;

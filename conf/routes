@@ -1,0 +1,133 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+#Mandatory Routes for Application Config
+
+
+OPTIONS        /*path                                                                   controllers.Application.preflight(path: String)
+GET            /assets/*file                                                            controllers.Assets.at(path="/public", file)
+GET            /checkForUpdates/:versionCode                                            controllers.Application.checkForUpdate(versionCode: String)
+GET            /spreedlyEnvironmentKey                                                  controllers.Application.getSpreedlyEnvKey()
+GET            /loaderio-2ec52278cad4af47840c75721b144fa1/                              controllers.Application.returnOk()
+
+#TRUCK ROUTES
+POST           /trucks                                                                  controllers.TrucksController.createTruck()
+DELETE         /trucks/:truckId                                                         controllers.TrucksController.deleteTruck(truckId: Long)
+GET            /trucks/:truckId                                                         controllers.TrucksController.getTruck(truckId: Long)
+GET            /userActiveTrucks                                                        controllers.TrucksController.userActiveTrucks()
+GET            /mapData                                                                 controllers.UsersController.getMapData()
+
+#returns items and truck information
+GET            /trucks/:truckId/menu                                                    controllers.TrucksController.getTruckMenuItems(truckId: Long)
+
+#Just Returns Items
+GET            /trucks/:truckId/items                                                   controllers.TrucksController.getCurrentMenuItems(truckId: Long)
+
+#ITEM ROUTES
+POST           /items                                                                   controllers.ItemsController.createItem()
+DELETE         /items/:itemId                                                           controllers.ItemsController.deleteItem(itemId: Long)
+POST           /items/:itemId                                                           controllers.ItemsController.updateItem(itemId: Long)
+POST           /bulkUpdate/items                                                        controllers.ItemsController.updateAllItems()
+
+#ITEM OPTION ROUTES
+
+GET            /items/toggleItemOption/:itemId/:itemOptionId/:state                     controllers.ItemsController.toggleOptionForItemId(itemOptionId: Long, itemId: Long, state: String)
+GET            /deleteOptionFromAllItems/:itemOptionId                                  controllers.ItemsController.deleteOptionFromAllItems(itemOptionId: Long)
+GET            /toggleItemOptionForAllItems/:itemOptionId/:trueOrFalse                  controllers.ItemsController.enableOrDisableOptionForAllItems(itemOptionId: Long, trueOrFalse: String)
+GET            /copyOptionsFromItem/:fromItemId/:toItemId                               controllers.ItemsController.copyOptionsFromItem(fromItemId: Long, toItemId: Long)
+
+#applyOptionToAllItems
+
+
+#ORDER ROUTES
+GET            /orders/:orderId/updatestatus/:currentStatus                             controllers.OrdersController.updateOrderStatus(orderId: Long, currentStatus: Integer)
+GET            /orders/:orderId/cancelorder/:currentStatus                              controllers.OrdersController.cancelOrder(orderId: Long, currentStatus: Integer)
+GET            /orders/:orderId/confirmOrder                                            controllers.OrdersController.confirmOrder(orderId: Long)
+
+POST           /session                                                                 controllers.SessionsController.createSession()
+POST           /usersession                                                             controllers.JWTSessionsController.createUserSession()
+#Create an Order from POS
+
+GET            /events/upcomingevents                                                   controllers.TrucksController.possibleUpcomingEvents()
+
+POST           /trucksession/:truckSessionId/createPosOrder                             controllers.OrdersController.createPOSOrder(truckSessionId: Long)
+
+#POST           /paymethods/add                                                 controllers.UsersController.addPaymentMethod()
+POST           /paymethods/add                                                          controllers.UsersController.addPaymentMethod()
+#DELETE         /paymethods/:token                                              controllers.UsersController.deleteUserPaymentMethod(token: String)
+DELETE         /paymethods/:token                                                       controllers.UsersController.deletePaymentMethod(token: String)
+
+GET            /paymethods/:paymentMethodId/makeDefault                                 controllers.UsersController.makeDefaultPaymentMethod(paymentMethodId: Long)
+GET            /clientToken                                                             controllers.PaymentsController.getBrainTreeClientToken()
+
+#Handle subscriptions on website
+GET            /subscribe/:email                                                        controllers.SubscriptionController.createSubscription(email: String)
+GET            /demosubscribe/:email/:name/:phonenumber                                 controllers.SubscriptionController.createVendorSubscription(email: String, name: String, phonenumber: String)
+
+
+#USER ACCOUNT ROUTES CRUD
+POST           /users                                                                   controllers.UsersController.createUser()
+GET            /users/updates                                                           controllers.UsersController.getUserUpdate()
+POST           /users/update                                                            controllers.UsersController.updateAccountDetails()
+
+GET            /users/orders                                                            controllers.UsersController.getOrders()
+GET            /users/pastorders                                                        controllers.UsersController.getPastOrders()
+GET            /users/orderhistory                                                      controllers.UsersController.getPastAndCancelledOrders()
+
+#create mobile order
+#POST           /users/:truckId/orders                                           controllers.OrdersController.createMobileOrder(truckId: Long)
+POST           /users/:truckId/orders                                                   controllers.OrdersController.createMobileOrderWithSpreedly(truckId: Long)
+GET            /users/orders/:orderId/cancel                                            controllers.OrdersController.userCancelOrder(orderId: Long)
+#Management for Truck Sessions
+
+GET            /trucksession/:truckId                                                   controllers.TruckSessionsController.getCurrentTruckSession(truckId: Long)
+GET            /futuretrucksessions/:truckId                                            controllers.TruckSessionsController.getFutureTruckSessions(truckId: Long)
+POST           /trucksession                                                            controllers.TruckSessionsController.createTruckSession()
+POST           /trucksession/:truckSessionId                                            controllers.TruckSessionsController.updateTruckSession(truckSessionId: Long)
+GET            /trucksession/:truckSessionId/Close                                      controllers.TruckSessionsController.closeTruckSession(truckSessionId: Long)
+GET            /trucksession/:truckSessionId/ToggleUser                                 controllers.TruckSessionsController.toggleUserTruckSession(truckSessionId: Long)
+GET            /trucksession/updateCloseTime/:truckSessionid/:closeTime                 controllers.TruckSessionsController.updateCloseTime(truckSessionid: Long, closeTime: String)
+
+#Get Different Orders with Types for a TruckSession
+GET            /trucksession/:truckSessionId/updatedOrders/:updateTime                  controllers.TruckSessionsController.getAllOrdersAfterLastUpdate(truckSessionId: Long, updateTime: String)
+GET            /trucksession/:truckSessionId/allOrders                                  controllers.TruckSessionsController.getAllOrders(truckSessionId: Long)
+GET            /trucksession/:truckSessionId/allOrdersAfterOrderId/:lastOrderId         controllers.TruckSessionsController.getAllOrdersIncrementally(truckSessionId: Long, lastOrderId: Long)
+GET            /trucksession/:truckSessionId/allOrdersBeforeOrderId/:lastOrderId        controllers.TruckSessionsController.getAllOrdersIncrementallyDescending(truckSessionId: Long, lastOrderId: Long)
+
+
+GET            /trucksession/:truckSessionId/orderCount                                 controllers.TruckSessionsController.getOrderCount(truckSessionId: Long)
+
+
+#Password Reset Routes
+POST           /createPasswordResetToken                                                controllers.UsersController.getPasswordResetToken()
+POST           /resetPassword/:passwordResetToken                                       controllers.UsersController.resetPassword(passwordResetToken: String)
+
+POST           /devices/register/:deviceType/:deviceToken                               controllers.DevicesController.registerDevice(deviceToken: String, deviceType: String)
+POST           /devices/:deviceId/update/:deviceToken                                   controllers.DevicesController.updateDeviceToken(deviceId: Long, deviceToken: String)
+
+GET            /jobs/trucksessiontimeout                                                controllers.JobsController.trucksessionTimeout()
+GET            /fb/:truckId                                                             controllers.TruckSessionsController.getFacebookSessions(truckId: String)
+
+
+#Vendor Management Routes
+POST           /manager/trucks                                                          controllers.TrucksController.createTruckFromManager()
+GET            /trucks/:truckId/bankaccounts                                            controllers.BankAccountsController.getCurrentBankAccount(truckId: Long)
+POST           /trucks/:truckId/bankaccounts                                            controllers.BankAccountsController.addBankAccount(truckId: Long)
+POST           /manager/session                                                         controllers.JWTSessionsController.createVendorSession()
+POST           /trucks/:truckId/billingplans                                           controllers.BillingPlansController.createBillingPlan(truckId: Long)
+GET            /trucks/:truckId/billingplans                                           controllers.BillingPlansController.getBillingPlans(truckId: Long)
+POST           /billingplans/:billingPlanId/updatepaymentmethod                        controllers.BillingPlansController.updateBillingPlan(billingPlanId: Long)
+GET            /trucks/:truckId/sales/:from/:to                                        controllers.ReportsController.getSalesData(truckId: Long, from: Long, to: Long)
+GET            /report/session/:truckSessionId                                         controllers.ReportsController.downloadReport(truckSessionId: Long)
+POST           /trucks/:truckId/update                                                 controllers.TrucksController.updateTruckDetails(truckId: Long)
+POST           /trucks/:truckId/resetPassword                                          controllers.TrucksController.resetPassword(truckId: Long)
+GET            /trucks/:truckId/orders/:from/:to                                       controllers.ReportsController.downloadOrdersReport(truckId: Long, from: Long, to: Long)
+POST           /billingplans/:billingPlanId/updateexpired                              controllers.BillingPlansController.updateBillingPlanFromTrial(billingPlanId: Long)
+POST           /eventManagerSession                                                     controllers.SessionsController.createEventManagerSession()
+POST           /createEventManager                                                      controllers.EventManagerController.createEventManager()
+POST           /createEvent                                                             controllers.EventsController.createEvent()
+POST           /updateEvent/:eventId                                                    controllers.EventsController.updateEvent(eventId: Long)
+GET            /myEvents                                                                controllers.EventsController.getAllEvents()
+
+GET            /sendReceipt/:orderId/:emailAddress                                      controllers.UsersController.sendReceiptOnRequest(orderId: Long, emailAddress: String)

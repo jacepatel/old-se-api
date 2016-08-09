@@ -1,0 +1,7 @@
+-- #-- Example
+--
+-- # --- !Ups
+-- CREATE TABLE spreedlyvariables (spreedlyid serial, environmentkey varchar(200) NOT NULL, current boolean)
+--
+-- # --- !Downs
+-- DROP TABLE spreedlyvariables

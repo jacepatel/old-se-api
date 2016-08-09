@@ -1,0 +1,1 @@
+-- ALTER TABLE trucks ADD COLUMN abn character varying(20);

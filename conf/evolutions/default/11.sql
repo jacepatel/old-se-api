@@ -1,0 +1,13 @@
+-- #-- Example
+--
+-- # --- !Ups
+-- ALTER TABLE Events ADD COLUMN description varchar(250) Default NULL;
+-- ALTER TABLE Events ADD COLUMN bannerUrl varchar(250) Default NULL;
+-- ALTER TABLE TruckSessions ADD COLUMN Address VARCHAR(300) Default NULL;
+-- ALTER TABLE Items ADD COLUMN Sort BIGINT DEFAULT NULL;
+-- ALTER TABLE ItemOptionSelects ADD COLUMN Sort BIGINT DEFAULT NULL;
+-- # --- !Downs
+-- ALTER TABLE Events DROP COLUMN description;
+-- ALTER TABLE Events DROP COLUMN bannerUrl;
+-- ALTER TABLE TruckSessions DROP COLUMN Address;
+
